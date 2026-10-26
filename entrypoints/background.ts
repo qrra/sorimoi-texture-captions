@@ -19,7 +19,7 @@ export default defineBackground(()=>{
     if(!tab?.id||!/^https?:\/\//.test(tab.url||''))throw new Error('YouTube 쇼츠나 일반 영상 페이지를 연 뒤 눌러주세요.');
     const prefs={...DEFAULT_PREFS,...(await browser.storage.local.get('prefs')).prefs};
     await browser.storage.session.set({liveState:{phase:'connecting',tabId:tab.id,text:'재생 소리를 연결합니다.'}});
-    try{await ensureOffscreen();const streamId=await browser.tabCapture.getMediaStreamId({targetTabId:tab.id});const result=await browser.runtime.sendMessage({target:'offscreen',type:'START',streamId,tabId:tab.id,prefs});if(!result?.ok)throw new Error(result?.error||'소리 연결 실패');await browser.scripting.executeScript({target:{tabId:tab.id},func:installLiveOverlay,args:[prefs,textureCSS]});await browser.action.setBadgeText({text:'ON'});await browser.action.setBadgeBackgroundColor({color:'#506740'});return {ok:true};}
+    try{await ensureOffscreen();const streamId=await browser.tabCapture.getMediaStreamId({targetTabId:tab.id});const result=await browser.runtime.sendMessage({target:'offscreen',type:'START',streamId,tabId:tab.id,prefs});if(!result?.ok)throw new Error(result?.error||'소리 연결 실패');const injected=await browser.scripting.executeScript({target:{tabId:tab.id},func:installLiveOverlay,args:[prefs,textureCSS]});if(!injected[0]?.result?.hasVideo)throw new Error('재생할 영상을 찾지 못했어요. 영상을 연 뒤 자막 시작을 눌러주세요.');await browser.action.setBadgeText({text:'ON'});await browser.action.setBadgeBackgroundColor({color:'#506740'});return {ok:true};}
     catch(error){await stop();throw error;}
    }
    if(message.type==='SORIMOI_CONTEXT'){
@@ -33,5 +33,16 @@ export default defineBackground(()=>{
   })().then(respond,error=>respond({ok:false,error:error.message}));return true;
  });
  browser.tabs.onRemoved.addListener(async tabId=>{if((await state()).tabId===tabId)await stop();});
- browser.tabs.onUpdated.addListener(async(tabId,change)=>{if(change.status==='loading'&&(await state()).tabId===tabId)await stop();});
+ let navigationQueue=Promise.resolve();
+ browser.tabs.onUpdated.addListener((tabId,change)=>{navigationQueue=navigationQueue.then(async()=>{
+  const current=await state();if(current.tabId!==tabId||['idle','ended'].includes(current.phase))return;
+  if(change.status==='loading'){
+   if((await contexts()).length)await browser.runtime.sendMessage({target:'offscreen',type:'SUSPEND'}).catch(()=>{});
+   await browser.storage.session.set({liveState:{...current,phase:'reconnecting',text:'영상을 다시 연결하고 있어요.',preparedCount:0}});
+  }else if(change.status==='complete'&&current.phase==='reconnecting'){
+   const prefs={...DEFAULT_PREFS,...(await browser.storage.local.get('prefs')).prefs};
+   try{await browser.scripting.executeScript({target:{tabId},func:installLiveOverlay,args:[prefs,textureCSS]});await browser.storage.session.set({liveState:{...current,phase:'listening',text:'영상에 다시 연결했어요. 자막을 준비합니다.'}});}
+   catch{await browser.storage.session.set({liveState:{...current,phase:'ended',text:'이 페이지에서는 자막 시작을 다시 눌러주세요.'}});}
+  }
+ }).catch(()=>{});});
 });

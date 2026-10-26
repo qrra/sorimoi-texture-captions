@@ -6,9 +6,15 @@ import './style.css';
 const $=s=>document.querySelector(s);let data=await browser.storage.local.get(['project','prefs']);
 $('#motion').checked=data.prefs?.impactMotion!==false;$('#speechFallback').checked=data.prefs?.speechFallback!==false;$('#amount').value=data.prefs?.amount??.65;
 for(const id of ['motion','amount','speechFallback'])$('#'+id).onchange=async()=>{data=await browser.storage.local.get('prefs');await browser.storage.local.set({prefs:{...DEFAULT_PREFS,...data.prefs,impactMotion:$('#motion').checked,speechFallback:$('#speechFallback').checked,amount:Number($('#amount').value)}});};
-async function refresh(){try{const state=await browser.runtime.sendMessage({target:'background',type:'STATUS'});const on=state?.phase&&state.phase!=='idle'&&state.phase!=='ended';$('#liveStart').hidden=!!on;$('#liveStop').hidden=!on;if(on){$('#summary').textContent=state.text||'재생 소리에 연결했습니다.';if(state.speechError)$('#status').textContent='음성 모델 오류: '+state.speechError;}else $('#summary').textContent='쇼츠나 영상을 재생한 뒤 아래 버튼을 누르세요.';}catch(e){$('#status').textContent=e.message;}}
-$('#liveStart').onclick=async()=>{try{$('#liveStart').disabled=true;$('#status').textContent='현재 탭 소리를 연결합니다…';const result=await browser.runtime.sendMessage({target:'background',type:'START'});if(!result?.ok)throw new Error(result?.error||'소리에 연결하지 못했습니다.');$('#status').textContent='연결했습니다. 팝업을 닫고 영상을 보세요.';await refresh();}catch(e){$('#status').textContent=e.message;}finally{$('#liveStart').disabled=false;}};
-$('#liveStop').onclick=async()=>{await browser.runtime.sendMessage({target:'background',type:'STOP'});$('#status').textContent='효과음 글자를 껐습니다.';await refresh();};
+async function refresh(){try{
+ const [state,tabs]=await Promise.all([browser.runtime.sendMessage({target:'background',type:'STATUS'}),browser.tabs.query({active:true,currentWindow:true})]);
+ const on=state?.tabId===tabs[0]?.id&&state?.phase&&!['idle','ended'].includes(state.phase);
+ $('#liveStart').hidden=false;$('#liveStart').textContent=on?'자막 다시 연결':'자막 시작';$('#liveStop').hidden=!on;$('#replay').hidden=!on||!state.preparedCount;
+ $('#summary').textContent=on?(state.text||'자막을 준비하고 있어요.'):state?.phase==='ended'&&state.tabId===tabs[0]?.id?(state.text||'자막 시작을 다시 눌러주세요.'):'영상을 재생하고 자막 시작을 눌러주세요.';
+ }catch{$('#summary').textContent='연결이 끊겼어요. 확장 관리에서 새로고침 후 다시 열어주세요.';}}
+
+$('#liveStart').onclick=async()=>{try{$('#liveStart').disabled=true;$('#status').textContent='현재 탭 소리를 연결합니다…';const result=await browser.runtime.sendMessage({target:'background',type:'START'});if(!result?.ok)throw new Error(result?.error||'소리에 연결하지 못했습니다.');$('#status').textContent='영상 위에 자막 준비 상태가 표시됩니다. 팝업을 닫아도 됩니다.';await refresh();}catch(e){$('#status').textContent=e.message;}finally{$('#liveStart').disabled=false;}};
+$('#liveStop').onclick=async()=>{await browser.runtime.sendMessage({target:'background',type:'STOP'});$('#status').textContent='자막을 껐습니다.';await refresh();};
 refresh();setInterval(refresh,1200);
 $('#studio').onclick=()=>browser.tabs.create({url:browser.runtime.getURL('/studio.html')});
 async function run(fn,args=[]){

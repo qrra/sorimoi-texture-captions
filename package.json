@@ -1,6 +1,6 @@
 {
   "name": "sorimoi-texture-studio",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "private": true,
   "type": "module",
   "scripts": {
@@ -8,7 +8,8 @@
     "build": "vite build",
     "extension": "node scripts/prepare-live.mjs && wxt build",
     "test": "node --test tests/*.test.mjs",
-    "setup": "node scripts/download-model.mjs && node scripts/download-whisper.mjs && node scripts/prepare-live.mjs && node scripts/make-samples.mjs"
+    "setup": "node scripts/download-model.mjs && node scripts/download-whisper.mjs && node scripts/prepare-live.mjs && node scripts/make-samples.mjs",
+    "test:extension": "node --test tests/background-reconnect.mjs"
   },
   "dependencies": {
     "@huggingface/transformers": "3.8.1",
