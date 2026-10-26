@@ -1,5 +1,7 @@
 # Third-party notices
 
+Version 0.2 adds automatic speech recognition: Transformers.js 3.8.1 (Hugging Face, Apache-2.0), ONNX Runtime Web 1.22.0-dev.20250409-89f8206ba4 (Microsoft, MIT), and Xenova/whisper-base revision `64da57285918e20ea79ea5c88eed7197933abaa8` (Apache-2.0 model artifact). Local files and SHA256 hashes are recorded in `public/models/Xenova/whisper-base/artifact-manifest.json`. Original models: https://huggingface.co/Xenova/whisper-base and https://huggingface.co/openai/whisper-base. Runtime license texts are in `public/licenses`.
+
 This prototype integrates these three candidate projects:
 
 - WXT 0.20.27 and @wxt-dev/browser 0.2.9 — MIT, Aaron Klinker and WXT contributors. https://github.com/wxt-dev/wxt. Full license: `public/licenses/WXT-MIT.txt`.

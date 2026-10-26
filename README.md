@@ -1,10 +1,42 @@
-# 소리모이 · 소리의 결
+[**쇼츠용 0.2.0 설치 ZIP 다운로드**](https://github.com/qrra/sorimoi-texture-captions/releases/download/v0.2.0/sorimoi-chrome-0.2.0.zip)
+
+# 소리모이 · 쇼츠 라이브 자막 0.2
+
+유튜브 쇼츠나 일반 영상을 재생한 뒤 **확장 아이콘 → 이 탭에서 자막 켜기**를 누르는 방식으로 바꿨습니다. 파일을 먼저 넣거나 검수해야 하는 화면은 보조 기능으로 옮겼습니다.
+
+## 0.2 사용법
+
+1. 설치용 ZIP의 `sorimoi-chrome` 폴더를 크롬/웨일 확장 관리에서 로드합니다. 기존 같은 폴더를 설치했다면 확장 관리 화면의 새로고침을 누릅니다. 표시 이름은 **소리모이 · 쇼츠 라이브 자막**, 버전은 **0.2.0**입니다.
+2. 유튜브 쇼츠나 영상을 열고 소리가 나도록 재생합니다.
+3. 퍼즐 아이콘 → 소리모이 → **이 탭에서 자막 켜기**. 팝업을 닫고 영상을 보면 됩니다. 파일 입력·API 키·Python 서버가 필요 없습니다.
+4. 같은 유튜브 탭에서 다음 쇼츠로 넘기면 자막을 초기화하고 재생 중인 영상을 다시 찾습니다. 새 탭이나 페이지 새로고침 뒤에는 다시 켭니다.
+5. 끄려면 확장 팝업의 **라이브 자막 끄기**. 오디오 트랙·분석 Worker·오디오 컨텍스트를 정리합니다.
+
+### 무엇이 바로 나오고, 무엇이 기다리는가
+
+- 화면에 이미 표시되는 YouTube 자막이 있으면 그 글자를 즉시 활용합니다. 원래 표시를 가리고 동일한 글자에 소리의 무게와 질감을 적용합니다. 팝업이 YouTube 자막 기능 자체를 강제로 켜지는 않습니다.
+- 유튜브 자막이 없는 구간은 **실제 탭 오디오를 Whisper base로 한국어 전사**합니다. 3~5초의 짧은 구간을 후행 처리하므로 단어와 동시에 뜨는 무지연 자막은 아닙니다. 처리 시간도 더해지며 PC마다 다릅니다. 화면에 출처와 후행 인식 상태를 표시합니다.
+- YAMNet은 약 1초의 현재 소리에서 효과음 후보를 찾습니다. 잡음·음악·겹친 음성에서 오탐과 누락이 있습니다. 물리적 촉감이나 감정을 측정하는 기능은 아닙니다.
+- 음량은 연속 RMS로 반응하고 질감은 소리 분류에 따라 달라집니다. 마이크를 사용하지 않고, 캡처한 오디오를 서버로 전송하지 않습니다.
+- 음성·효과음 모델과 JS/WASM을 **설치 파일에 포함**했습니다. 첫 시작의 모델 메모리 초기화 시간은 필요하지만 수백 MB를 따로 다운로드하지 않습니다. 압축 해제 용량은 약 121MB입니다.
+
+### 온소리에서 이어받은 방향과 달라진 흐름
+
+팀원분의 [온소리 0.2 README](https://github.com/NY-colab/onsori-youtube#readme)를 기준으로 사용 흐름을 재검토했습니다. 온소리는 최대 60초 녹음 후 분석 완료 결과를 표시하고 새 영상에서 첫 녹음 연결을 요청합니다. 이번 수정은 **현재 탭에 한 번 연결 → 짧은 구간 반복 분석 → 쇼츠 이동 때 이전 추론 폐기**로 구성했습니다. 핵심 조합은 WXT + Whisper/Transformers.js + YAMNet이며 기존 vtt.js는 파일 검수 기능에 남았습니다. 온소리 저장소의 코드를 복사한 빌드는 아닙니다.
+
+### 검증 범위
+
+로컬 모델의 한국어 합성 음성 전사, 기존 자막 우선 표시, 이동 시 결과 폐기, 음량 분석을 테스트합니다. 테스트 페이지 결과와 실제 설치된 확장의 Chrome `tabCapture`·오프스크린 연결 결과는 구분합니다. 브라우저 보안 정책으로 이 환경에서 사용자 프로필의 확장 등록을 자동 수행할 수 없어 **실제 유튜브 쇼츠에서의 종단 간 검증은 아직 완료하지 못했습니다.** 설치 후 소리 연결 오류가 있으면 팝업에 오류를 표시합니다. 이를 모든 쇼츠에서 검증 완료된 제품으로 표현하지 않습니다.
+
+---
+
+# 0.1 파일 검수 스튜디오 사용 안내
 
 크롬 MV3 확장 프로그램 0.1.0. 소리를 입자·단단함·물결·숨결·부드러움·무게의 여섯 가지 글자 질감으로 표현합니다. 직접 합성한 체험음, 로컬 소리 분석, WebVTT 대사 가져오기, 사람 검수, 일반 HTML5 영상 위 자막 표시를 연결했습니다.
 
 ## 설치
 
-1. [설치용 ZIP 다운로드](downloads/sorimoi-chrome-0.1.0.zip?raw=true) 후 압축을 풉니다. **sorimoi-chrome** 폴더를 유지합니다.
+1. 함께 제공한 **sorimoi-chrome** 폴더를 유지합니다. ZIP을 사용한다면 먼저 압축을 풉니다.
 2. 크롬 주소창에 `chrome://extensions` → 개발자 모드 → 압축해제된 확장 프로그램 로드 → **manifest.json이 바로 들어 있는 sorimoi-chrome 폴더** 선택.
 3. 퍼즐 아이콘 → 소리모이 → **스튜디오 열기**.
 4. 웨일에서는 `whale://extensions`에서 같은 방식으로 설치할 수 있습니다. 실제 설치 완료 여부는 별도 확인이 필요합니다.
@@ -62,11 +94,10 @@ YAMNet은 물리적 촉감이나 감정을 측정하지 않습니다. 모델의 
 
 ```text
 npm ci --ignore-scripts
-npm run setup
 npm test
 npm run extension
 ```
 
-결과는 `.output/chrome-mv3/`. 웹 검수용 `npm run dev`, 웹 빌드 `npm run build`도 제공합니다. `node tests/model-smoke.mjs`는 포함된 가중치의 실제 CPU 추론을 확인합니다. `tests/overlay.html`은 오버레이 검증용 페이지입니다. 테스트 영상은 `node scripts/download-model.mjs --fixture`로 별도 다운로드합니다. `package-lock.json`으로 설치 버전을 고정했습니다.
+결과는 `.output/chrome-mv3/`. 웹 검수용 `npm run dev`, 웹 빌드 `npm run build`도 제공합니다. `node tests/model-smoke.mjs`는 포함된 가중치의 실제 CPU 추론을 확인합니다. `tests/overlay.html`은 오버레이 검증용 페이지입니다. `package-lock.json`으로 설치 버전을 고정했습니다.
 
-모델 출처: https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1/model.json?tfjs-format=file. 가중치 및 모델은 Apache-2.0이며 공식 [Kaggle 모델 카드](https://www.kaggle.com/models/google/yamnet/tensorFlow2/yamnet/1)에 사용 조건과 입출력이 기재되어 있습니다. Git 소스에는 모델 구조·클래스 표·LICENSE·SHA256을 포함했고, 가중치는 `npm run setup`으로 공식 호스트에서 받아 SHA256을 확인합니다. 설치용 ZIP에는 가중치가 포함되어 있습니다. 자세한 고지는 `THIRD_PARTY_NOTICES.md`와 `public/licenses`를 확인하세요.
+모델 출처: https://tfhub.dev/google/tfjs-model/yamnet/tfjs/1/model.json?tfjs-format=file. 가중치 및 모델은 Apache-2.0이며 공식 [Kaggle 모델 카드](https://www.kaggle.com/models/google/yamnet/tensorFlow2/yamnet/1)에 사용 조건과 입출력이 기재되어 있습니다. `public/models/yamnet`에 원본 가중치·클래스 표·LICENSE를 포함했습니다. 자세한 고지는 `THIRD_PARTY_NOTICES.md`와 `public/licenses`를 확인하세요.

@@ -1,5 +1,42 @@
 [
   {
+    "name": "@huggingface/transformers",
+    "version": "3.8.1",
+    "license": "Apache-2.0",
+    "author": "Hugging Face",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/huggingface/transformers.js.git"
+    }
+  },
+  {
+    "name": "@huggingface/jinja",
+    "version": "0.5.10",
+    "license": "MIT",
+    "author": "Hugging Face",
+    "repository": "https://github.com/huggingface/huggingface.js.git"
+  },
+  {
+    "name": "onnxruntime-web",
+    "version": "1.22.0-dev.20250409-89f8206ba4",
+    "license": "MIT",
+    "author": "fs-eire",
+    "repository": {
+      "url": "https://github.com/Microsoft/onnxruntime.git",
+      "type": "git"
+    }
+  },
+  {
+    "name": "onnxruntime-common",
+    "version": "1.21.0",
+    "license": "MIT",
+    "author": "fs-eire",
+    "repository": {
+      "url": "https://github.com/Microsoft/onnxruntime.git",
+      "type": "git"
+    }
+  },
+  {
     "name": "@wxt-dev/browser",
     "version": "0.2.9",
     "license": "MIT",

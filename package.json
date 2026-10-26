@@ -1,16 +1,17 @@
 {
   "name": "sorimoi-texture-studio",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
   "type": "module",
   "scripts": {
     "dev": "vite --host 127.0.0.1",
     "build": "vite build",
-    "extension": "wxt build",
+    "extension": "node scripts/prepare-live.mjs && wxt build",
     "test": "node --test tests/*.test.mjs",
-    "setup": "node scripts/download-model.mjs && node scripts/make-samples.mjs"
+    "setup": "node scripts/download-model.mjs && node scripts/download-whisper.mjs && node scripts/prepare-live.mjs && node scripts/make-samples.mjs"
   },
   "dependencies": {
+    "@huggingface/transformers": "3.8.1",
     "@tensorflow/tfjs": "4.22.0",
     "vtt.js": "0.13.0"
   },

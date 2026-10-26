@@ -2,8 +2,11 @@ node_modules/
 .wxt/
 .output/
 dist/
-.openai/
 *.tar.gz
-public/models/yamnet/*.bin
+.openai/
+work-model.json
+public/models/**/*.bin
+public/models/**/*.onnx
+public/ort/
 public/samples/*.wav
 tests/flower.mp4
