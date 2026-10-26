@@ -12,13 +12,14 @@ export default defineBackground(()=>{
   if(message?.target!=='background')return;
   (async()=>{
    if(message.type==='STATUS')return state();
+   if(message.type==='REPLAY'){const current=await state();if(!current.tabId)return {ok:false,error:'먼저 효과음을 켜주세요.'};return browser.tabs.sendMessage(current.tabId,{type:'SORIMOI_REPLAY'});}
    if(message.type==='STOP'){await stop();return {ok:true};}
    if(message.type==='START'){
     await stop();const [tab]=await browser.tabs.query({active:true,currentWindow:true});
     if(!tab?.id||!/^https?:\/\//.test(tab.url||''))throw new Error('YouTube 쇼츠나 일반 영상 페이지를 연 뒤 눌러주세요.');
     const prefs={...DEFAULT_PREFS,...(await browser.storage.local.get('prefs')).prefs};
     await browser.storage.session.set({liveState:{phase:'connecting',tabId:tab.id,text:'재생 소리를 연결합니다.'}});
-    try{await ensureOffscreen();const streamId=await browser.tabCapture.getMediaStreamId({targetTabId:tab.id});const result=await browser.runtime.sendMessage({target:'offscreen',type:'START',streamId,tabId:tab.id});if(!result?.ok)throw new Error(result?.error||'소리 연결 실패');await browser.scripting.executeScript({target:{tabId:tab.id},func:installLiveOverlay,args:[prefs,textureCSS]});await browser.action.setBadgeText({text:'ON'});await browser.action.setBadgeBackgroundColor({color:'#506740'});return {ok:true};}
+    try{await ensureOffscreen();const streamId=await browser.tabCapture.getMediaStreamId({targetTabId:tab.id});const result=await browser.runtime.sendMessage({target:'offscreen',type:'START',streamId,tabId:tab.id,prefs});if(!result?.ok)throw new Error(result?.error||'소리 연결 실패');await browser.scripting.executeScript({target:{tabId:tab.id},func:installLiveOverlay,args:[prefs,textureCSS]});await browser.action.setBadgeText({text:'ON'});await browser.action.setBadgeBackgroundColor({color:'#506740'});return {ok:true};}
     catch(error){await stop();throw error;}
    }
    if(message.type==='SORIMOI_CONTEXT'){

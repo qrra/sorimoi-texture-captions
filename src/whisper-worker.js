@@ -15,8 +15,8 @@ self.onmessage=async({data})=>{
   if(data.type==='transcribe'){
    if(busy||!transcriber){self.postMessage({type:'skipped',requestId:data.requestId,generation:data.generation});return;}
    busy=true;const started=performance.now();
-   try{const output=await transcriber(data.audio,{language:data.language==='auto'?undefined:(data.language||'ko'),task:'transcribe',return_timestamps:false,max_new_tokens:96,num_beams:1,do_sample:false});
-    self.postMessage({type:'text',text:cleanTranscript(output.text),requestId:data.requestId,generation:data.generation,finishedAt:Date.now(),elapsed_ms:Math.round(performance.now()-started),capturedAt:data.capturedAt});
+   try{const output=await transcriber(data.audio,{language:data.language==='auto'?undefined:(data.language||'ko'),task:'transcribe',return_timestamps:'word',max_new_tokens:96,num_beams:1,do_sample:false});
+    self.postMessage({type:'text',text:cleanTranscript(output.text),chunks:output.chunks,clipId:data.clipId,mediaStart:data.mediaStart,rate:data.rate,duration:data.audio.length/16000,requestId:data.requestId,generation:data.generation,finishedAt:Date.now(),elapsed_ms:Math.round(performance.now()-started),capturedAt:data.capturedAt});
    }finally{busy=false;}
   }
  }catch(error){self.postMessage({type:'error',message:error.message,generation:data.generation,requestId:data.requestId});loading=null;}

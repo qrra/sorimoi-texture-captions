@@ -6,7 +6,7 @@ export const TEXTURES = {
   velvet:{name:'나직 · 부드러움',word:'나직이',hint:'가까이 감싸는 부드러운 결',color:'#dcb8ce'},
   bass:{name:'웅 · 무게',word:'우웅',hint:'낮게 눌리고 길게 남는 울림',color:'#b8c5aa'},
 };
-export const DEFAULT_PREFS={motion:false,amount:0.65,detail:2,plain:false,size:1};
+export const DEFAULT_PREFS={impactMotion:true,speechFallback:true,motion:false,amount:0.65,detail:2,plain:false,size:1};
 export function stripMarkup(value){return String(value).replace(/<[^>]*>/g,'').replace(/&amp;/g,'&').replace(/&lt;/g,'<').replace(/&gt;/g,'>');}
 export function validateProject(input){
   if(!input||input.schema!=='sorimoi/1'||!Array.isArray(input.cues))throw new Error('소리모이 JSON 형식이 아닙니다.');
