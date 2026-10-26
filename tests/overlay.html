@@ -1,0 +1,12 @@
+<!doctype html><html lang="ko"><meta charset="utf-8"><title>소리모이 오버레이 검증</title><style>body{background:#222;color:white;font:16px system-ui;margin:30px}#player{width:720px;max-width:90vw;background:#111}video{width:100%;display:block}button{padding:10px;margin:10px}#report{white-space:pre-wrap}#player:fullscreen{display:grid;place-items:center;width:100vw}#player:fullscreen video{width:90vw}</style><h1>HTML5 영상 오버레이 검증</h1><div id="player"><video src="./flower.mp4" controls muted></video></div><button id="apply">자막 적용</button><button id="replace">중복 없이 재적용</button><button id="seek">1초로 탐색</button><button id="speed">2배속</button><button id="fullscreen">플레이어 전체화면</button><button id="remove">자막 제거</button><button id="inspect">검증 결과 확인</button><pre id="report"></pre><script type="module">
+import {installOverlay,removeOverlay} from '../src/inject.mjs';
+import {demoProject} from '../src/demo.mjs';
+import css from '../src/texture.css?inline';
+const report=document.querySelector('#report'),v=document.querySelector('video');
+function apply(){report.textContent=JSON.stringify(installOverlay(demoProject(),{motion:false,plain:false,detail:3,amount:.65,size:1},css),null,2);v.currentTime=1;}
+document.querySelector('#apply').onclick=document.querySelector('#replace').onclick=apply;
+document.querySelector('#seek').onclick=()=>{v.currentTime=1;};document.querySelector('#speed').onclick=()=>{v.playbackRate=2;v.play();};
+document.querySelector('#remove').onclick=()=>{removeOverlay();report.textContent='overlay count: '+document.querySelectorAll('[data-sorimoi]').length;};
+document.querySelector('#fullscreen').onclick=()=>document.querySelector('#player').requestFullscreen();
+document.querySelector('#inspect').onclick=()=>{const host=document.querySelector('[data-sorimoi]');report.textContent=JSON.stringify({overlay_count:document.querySelectorAll('[data-sorimoi]').length,text:host?.shadowRoot.textContent.includes('[바스락]'),display:host?.style.display,video_time:v.currentTime,rate:v.playbackRate,fullscreen:!!document.fullscreenElement},null,2);};
+</script></html>

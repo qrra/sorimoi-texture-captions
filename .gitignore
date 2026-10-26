@@ -1,0 +1,9 @@
+node_modules/
+.wxt/
+.output/
+dist/
+.openai/
+*.tar.gz
+public/models/yamnet/*.bin
+public/samples/*.wav
+tests/flower.mp4

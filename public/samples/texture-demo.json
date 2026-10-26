@@ -1,0 +1,83 @@
+{
+  "schema": "sorimoi/1",
+  "title": "여섯 가지 소리의 표면",
+  "source_url": "",
+  "duration_ms": 24000,
+  "cues": [
+    {
+      "text": "바스락",
+      "texture": "grain",
+      "label": "종이의 마른 마찰",
+      "start_ms": 500,
+      "end_ms": 3500,
+      "id": "demo-0",
+      "kind": "sound",
+      "strength": 0.55,
+      "reviewed": true,
+      "source": "직접 합성한 체험용 소리 · 수동 디자인"
+    },
+    {
+      "text": "톡, 톡",
+      "texture": "tap",
+      "label": "나무를 두드리는 단단함",
+      "start_ms": 4400,
+      "end_ms": 7300,
+      "id": "demo-1",
+      "kind": "sound",
+      "strength": 0.8,
+      "reviewed": true,
+      "source": "직접 합성한 체험용 소리 · 수동 디자인"
+    },
+    {
+      "text": "찰랑",
+      "texture": "water",
+      "label": "물방울의 둥근 여운",
+      "start_ms": 8400,
+      "end_ms": 11500,
+      "id": "demo-2",
+      "kind": "sound",
+      "strength": 0.6,
+      "reviewed": true,
+      "source": "직접 합성한 체험용 소리 · 수동 디자인"
+    },
+    {
+      "text": "사아아",
+      "texture": "air",
+      "label": "공기가 퍼지는 가는 결",
+      "start_ms": 12400,
+      "end_ms": 15500,
+      "id": "demo-3",
+      "kind": "sound",
+      "strength": 0.35,
+      "reviewed": true,
+      "source": "직접 합성한 체험용 소리 · 수동 디자인"
+    },
+    {
+      "text": "나직이",
+      "texture": "velvet",
+      "label": "가까이 감싸는 부드러움",
+      "start_ms": 16400,
+      "end_ms": 19500,
+      "id": "demo-4",
+      "kind": "sound",
+      "strength": 0.3,
+      "reviewed": true,
+      "source": "직접 합성한 체험용 소리 · 수동 디자인"
+    },
+    {
+      "text": "우웅",
+      "texture": "bass",
+      "label": "낮고 묵직한 울림",
+      "start_ms": 20400,
+      "end_ms": 23500,
+      "id": "demo-5",
+      "kind": "sound",
+      "strength": 0.75,
+      "reviewed": true,
+      "source": "직접 합성한 체험용 소리 · 수동 디자인"
+    }
+  ],
+  "engine": {
+    "demo": true
+  }
+}

@@ -1,0 +1,148 @@
+[
+  {
+    "name": "@wxt-dev/browser",
+    "version": "0.2.9",
+    "license": "MIT",
+    "author": {
+      "name": "Aaron Klinker",
+      "email": "aaronklinker1+wxt@gmail.com"
+    },
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/wxt-dev/wxt.git",
+      "directory": "packages/browser"
+    }
+  },
+  {
+    "name": "vtt.js",
+    "version": "0.13.0",
+    "license": "Apache-2.0",
+    "author": "Andreas Gal <gal@mozilla.com>",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/mozilla/vtt.js.git"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs",
+    "version": "4.22.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs-core",
+    "version": "4.22.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git",
+      "directory": "tfjs-core"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs-converter",
+    "version": "4.22.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git",
+      "directory": "tfjs-converter"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs-backend-cpu",
+    "version": "4.22.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git",
+      "directory": "tfjs-backend-cpu"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs-backend-webgl",
+    "version": "4.22.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs-data",
+    "version": "4.22.0",
+    "license": "Apache-2.0",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git",
+      "directory": "tfjs-data"
+    }
+  },
+  {
+    "name": "@tensorflow/tfjs-layers",
+    "version": "4.22.0",
+    "license": "Apache-2.0 AND MIT",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/tensorflow/tfjs.git",
+      "directory": "tfjs-layers"
+    }
+  },
+  {
+    "name": "seedrandom",
+    "version": "3.0.5",
+    "license": "MIT",
+    "author": "David Bau",
+    "repository": {
+      "type": "git",
+      "url": "git://github.com/davidbau/seedrandom.git"
+    }
+  },
+  {
+    "name": "long",
+    "version": "4.0.0",
+    "license": "Apache-2.0",
+    "author": "Daniel Wirtz <dcode@dcode.io>",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/dcodeIO/long.js.git"
+    }
+  },
+  {
+    "name": "node-fetch",
+    "version": "2.6.13",
+    "license": "MIT",
+    "author": "David Frank",
+    "repository": {
+      "type": "git",
+      "url": "https://github.com/bitinn/node-fetch.git"
+    }
+  },
+  {
+    "name": "whatwg-url",
+    "version": "5.0.0",
+    "license": "MIT",
+    "author": "Sebastian Mayr <github@smayr.name>",
+    "repository": "jsdom/whatwg-url"
+  },
+  {
+    "name": "tr46",
+    "version": "0.0.3",
+    "license": "MIT",
+    "author": "Sebastian Mayr <npm@smayr.name>",
+    "repository": {
+      "type": "git",
+      "url": "git+https://github.com/Sebmaster/tr46.js.git"
+    }
+  },
+  {
+    "name": "webidl-conversions",
+    "version": "3.0.1",
+    "license": "BSD-2-Clause",
+    "author": "Domenic Denicola <d@domenic.me> (https://domenic.me/)",
+    "repository": "jsdom/webidl-conversions"
+  }
+]

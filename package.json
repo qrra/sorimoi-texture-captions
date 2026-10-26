@@ -1,0 +1,21 @@
+{
+  "name": "sorimoi-texture-studio",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host 127.0.0.1",
+    "build": "vite build",
+    "extension": "wxt build",
+    "test": "node --test tests/*.test.mjs",
+    "setup": "node scripts/download-model.mjs && node scripts/make-samples.mjs"
+  },
+  "dependencies": {
+    "@tensorflow/tfjs": "4.22.0",
+    "vtt.js": "0.13.0"
+  },
+  "devDependencies": {
+    "vite": "^6.1.0",
+    "wxt": "^0.20.0"
+  }
+}
