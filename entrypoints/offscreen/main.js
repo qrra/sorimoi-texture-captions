@@ -39,7 +39,6 @@ async function start(message){
    if(data.type==='error'){s.asrBusy=false;caption(s,'error','대사 분석을 시작하지 못했어요. 확장앱에서 자막 다시 연결을 눌러주세요.',{speechError:data.message});}
    if(data.type==='skipped'){s.asrBusy=false;}
    if(data.type==='text')handleTranscript(s,data);
-   }
   };
   s.worker.onerror=e=>{s.asrBusy=false;caption(s,'error','대사 분석이 중단됐어요. 확장앱에서 자막 다시 연결을 눌러주세요.',{speechError:e.message});};
   s.worker.postMessage({type:'load',modelRoot:chrome.runtime.getURL('/models/'),wasmRoot:chrome.runtime.getURL('/ort/')});}
@@ -55,11 +54,28 @@ async function start(message){
    if(!s.soundBusy&&s.ring.available>=15600&&now-s.lastSound>500){s.lastSound=now;classify(s,s.ring.latest(15600),s.generation,{...s.blockEnd,rate:anchor?.rate||1,clipId:s.clipId});}
    if(mediaEnd!==null&&s.ready&&!s.hasNative&&!s.asrBusy&&s.ring.available>=48000&&now-s.lastASR>3000&&features.rms>.0025&&(s.activeSamples>=8000||s.speechEvidence>now-4500)){
     const audio=s.ring.latest(80000);s.asrBusy=true;s.lastASR=now;s.activeSamples=0;if(!s.preparedCount)caption(s,'processing',s.fastBackend?'Apple Silicon에서 대사를 분석하고 있어요.':'대사를 분석하고 있어요. 준비되면 다시 보기 버튼이 나와요.');const requestId=++s.requestId;const request={audio,generation:s.generation,requestId,capturedAt:now,clipId:s.clipId,mediaStart:mediaEnd-audio.length/16000*(anchor?.rate||1),rate:anchor?.rate||1,language:'ko'};
-    if(s.fastBackend){transcribeFast(request).then(result=>handleTranscript(s,result)).catch(()=>{if(session!==s)return;s.fastBackend=null;if(s.browserReady){sendBrowserTranscription(s,request);caption(s,'processing','로컬 가속 연결이 끊겨 브라우저 분석으로 이어갑니다.');}else{s.pendingAudio=request;caption(s,'processing','로컬 가속 연결이 끊겨 브라우저 Whisper를 준비하고 있어요.');}});}
+    if(s.fastBackend){
+     transcribeFast(request)
+      .then(result=>handleTranscript(s,result))
+      .catch(()=>{
+       if(session!==s)return;
+       s.fastBackend=null;
+       if(s.browserReady){
+        sendBrowserTranscription(s,request);
+        caption(s,'processing','로컬 가속 연결이 끊겨 브라우저 분석으로 이어갑니다.');
+       }else{
+        s.pendingAudio=request;
+        caption(s,'processing','로컬 가속 연결이 끊겨 브라우저 Whisper를 준비하고 있어요.');
+       }
+      });
+    }
     else sendBrowserTranscription(s,request);
    }
   };
-  if(!s.fastBackend)await caption(s,s.speechFallback?'loading':'disabled',s.speechFallback?'음성 인식기를 준비하고 있어요. 영상을 계속 재생해주세요.':'음성 분석이 꺼져 있어요. 확장앱 설정에서 켜주세요.',{phase:'listening',preparedCount:0});return {ok:true};
+  if(!s.fastBackend){
+   await caption(s,s.speechFallback?'loading':'disabled',s.speechFallback?'음성 인식기를 준비하고 있어요. 영상을 계속 재생해주세요.':'음성 분석이 꺼져 있어요. 확장앱 설정에서 켜주세요.',{phase:'listening',preparedCount:0});
+  }
+  return {ok:true};
  }catch(error){await stop();return {ok:false,error:error.message};}
 }
 async function classify(s,audio,generation,frame){s.soundBusy=true;let input,output;
