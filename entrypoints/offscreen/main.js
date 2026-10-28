@@ -4,14 +4,26 @@ import {ImpactDetector,confidentSound} from '../../src/sound-events.mjs';
 import {speechCues,groupSpeech,timelyEvent} from '../../src/timeline.mjs';
 import {loadYamnet} from '../../src/analyze.js';
 let session=null;
+const FAST_ASR_ROOT='http://127.0.0.1:8765';
 async function emit(s,payload={},state){if(session!==s||s.stopped)return;await chrome.runtime.sendMessage({target:'background',type:'LIVE_UPDATE',tabId:s.tabId,payload,state}).catch(()=>{});}
 async function caption(s,captionState,text,extra={}){s.captionState=captionState;await emit(s,{captionState,captionMessage:text,clipId:s.clipId},{captionState,text,...extra});}
 async function emitEvent(s,event){const now=Date.now(),a=s.anchor;if(!a||!timelyEvent(event,{time:a.time+(now-a.wall)/1000*a.rate,now,generation:s.generation,paused:s.paused,rate:a.rate}))return;await emit(s,{generation:s.generation,event});}
+function handleTranscript(s,data){
+ if(session!==s||data.clipId!==s.clipId||data.generation!==s.generation)return;
+ s.asrBusy=false;const cues=groupSpeech(speechCues(data));
+ if(cues.length){s.preparedCount+=cues.length;emit(s,{cues,clipId:s.clipId});caption(s,'ready','분석한 구간의 자막이 준비됐어요. 자막과 함께 다시 볼 수 있어요.',{phase:'listening',preparedCount:s.preparedCount,asrMs:data.elapsed_ms});}
+ else if(!s.preparedCount)caption(s,'empty','아직 대사를 찾지 못했어요. 소리가 나는 상태로 조금 더 재생해주세요.');
+}
+async function probeFastBackend(){try{const r=await fetch(`${FAST_ASR_ROOT}/health`,{headers:{'X-Sorimoi-Client':'sorimoi-browser-v1'},signal:AbortSignal.timeout(350)});if(!r.ok)return null;const x=await r.json();return x?.engine==='mlx-whisper'&&x?.ready?x:null;}catch{return null;}}
+async function transcribeFast(data){const response=await fetch(`${FAST_ASR_ROOT}/api/transcribe-chunk`,{method:'POST',headers:{'Content-Type':'application/octet-stream','X-Sorimoi-Client':'sorimoi-browser-v1','X-Sample-Rate':'16000','X-Language':data.language||'ko'},body:new Blob([data.audio]),signal:AbortSignal.timeout(15000)});if(!response.ok)throw new Error(`로컬 분석 서비스 응답 ${response.status}`);const result=await response.json();return {...result,volumeEnvelope:data.volumeEnvelope,clipId:data.clipId,generation:data.generation,requestId:data.requestId,capturedAt:data.capturedAt,mediaStart:data.mediaStart,rate:data.rate,duration:data.audio.length/16000};}
+function sendBrowserTranscription(s,data){if(!s.browserReady||!s.worker){s.pendingAudio=data;return false;}s.worker.postMessage({type:'transcribe',...data},[data.audio.buffer]);return true;}
+function rmsEnvelope(audio,frameSamples=1600){const frames=[];for(let start=0;start<audio.length;start+=frameSamples){const end=Math.min(audio.length,start+frameSamples);let sum=0;for(let i=start;i<end;i++)sum+=audio[i]*audio[i];frames.push({start:start/16000,end:end/16000,rms:Math.sqrt(sum/Math.max(1,end-start))});}return frames;}
 async function stop(){const old=session;session=null;if(!old)return;old.stopped=true;old.worker?.terminate();old.stream?.getTracks().forEach(t=>t.stop());old.source?.disconnect();old.worklet?.disconnect();await old.context?.close().catch(()=>{});old.ring.clear();}
 function reset(s,generation){s.generation=generation;s.ring.clear();s.speechEvidence=0;s.activeSamples=0;s.lastASR=0;s.lastSound=0;s.requestId++;s.detector.reset();s.soundCandidate=null;s.soundCount=0;s.lastTexture=0;s.anchor=null;s.blockEnd=null;s.onsets=[];s.suppressImpactUntil=0;}
 async function start(message){
- await stop();const s={tabId:message.tabId,generation:0,ring:new AudioRing(),stopped:false,paused:false,hasNative:false,asrBusy:false,soundBusy:false,lastASR:0,lastSound:0,requestId:0,ready:false,level:0,speechEvidence:0,activeSamples:0,preparedCount:0,lastSignal:Date.now(),silentNotice:false,detector:new ImpactDetector(),soundCandidate:null,soundCount:0,lastTexture:0,anchor:null,blockEnd:null,onsets:[],suppressImpactUntil:0,eventId:0,speechFallback:message.prefs?.speechFallback!==false};session=s;
+ await stop();const s={tabId:message.tabId,generation:0,ring:new AudioRing(),stopped:false,paused:false,hasNative:false,asrBusy:false,soundBusy:false,lastASR:0,lastSound:0,requestId:0,ready:false,browserReady:false,fastBackend:null,pendingAudio:null,level:0,speechEvidence:0,activeSamples:0,preparedCount:0,lastSignal:Date.now(),silentNotice:false,detector:new ImpactDetector(),soundCandidate:null,soundCount:0,lastTexture:0,anchor:null,blockEnd:null,onsets:[],suppressImpactUntil:0,eventId:0,speechFallback:message.prefs?.speechFallback!==false};session=s;
  try{
+  if(s.speechFallback){s.fastBackend=await probeFastBackend();if(s.fastBackend){s.ready=true;caption(s,'loading',`Apple Silicon ${s.fastBackend.model||'MLX Whisper'}에 연결했어요.`);}}
   s.stream=await navigator.mediaDevices.getUserMedia({audio:{mandatory:{chromeMediaSource:'tab',chromeMediaSourceId:message.streamId}},video:false});
   s.context=new AudioContext({sampleRate:16000});await s.context.resume();
   if(s.context.sampleRate!==16000)throw new Error('이 브라우저가 16kHz 오디오 분석을 지원하지 않습니다.');
@@ -24,11 +36,10 @@ async function start(message){
   if(s.speechFallback){s.worker=new Worker(chrome.runtime.getURL('/speech-worker.js'));
   s.worker.onmessage=({data})=>{
    if(session!==s)return;
-   if(data.type==='ready'){s.ready=true;caption(s,s.hasNative?'native':'listening',s.hasNative?'YouTube 자막을 표시하고 있어요.':'첫 재생으로 대사를 분석해요. 준비되면 다시 보기 버튼이 나와요.',{phase:'listening',modelLoadMs:data.load_ms});}
+   if(data.type==='ready'){s.browserReady=true;if(!s.fastBackend){s.ready=true;caption(s,s.hasNative?'native':'listening',s.hasNative?'YouTube 자막을 표시하고 있어요.':'첫 재생으로 대사를 분석해요. 준비되면 다시 보기 버튼이 나와요.',{phase:'listening',modelLoadMs:data.load_ms});}if(s.pendingAudio){const pending=s.pendingAudio;s.pendingAudio=null;sendBrowserTranscription(s,pending);}}
    if(data.type==='error'){s.asrBusy=false;caption(s,'error','대사 분석을 시작하지 못했어요. 확장앱에서 자막 다시 연결을 눌러주세요.',{speechError:data.message});}
    if(data.type==='skipped'){s.asrBusy=false;}
-   if(data.type==='text'){s.asrBusy=false;if(data.clipId!==s.clipId)return;const cues=groupSpeech(speechCues(data));if(cues.length){s.preparedCount+=cues.length;emit(s,{cues,clipId:s.clipId});caption(s,'ready','분석한 구간의 자막이 준비됐어요. 자막과 함께 다시 볼 수 있어요.',{phase:'listening',preparedCount:s.preparedCount,asrMs:data.elapsed_ms});}else if(!s.preparedCount)caption(s,'empty','아직 대사를 찾지 못했어요. 소리가 나는 상태로 조금 더 재생해주세요.');
-   }
+   if(data.type==='text')handleTranscript(s,data);
   };
   s.worker.onerror=e=>{s.asrBusy=false;caption(s,'error','대사 분석이 중단됐어요. 확장앱에서 자막 다시 연결을 눌러주세요.',{speechError:e.message});};
   s.worker.postMessage({type:'load',modelRoot:chrome.runtime.getURL('/models/'),wasmRoot:chrome.runtime.getURL('/ort/')});}
@@ -43,10 +54,29 @@ async function start(message){
    s.ring.push(audioBlock);if(features.rms>.0025)s.activeSamples+=audioBlock.length;
    if(!s.soundBusy&&s.ring.available>=15600&&now-s.lastSound>500){s.lastSound=now;classify(s,s.ring.latest(15600),s.generation,{...s.blockEnd,rate:anchor?.rate||1,clipId:s.clipId});}
    if(mediaEnd!==null&&s.ready&&!s.hasNative&&!s.asrBusy&&s.ring.available>=48000&&now-s.lastASR>3000&&features.rms>.0025&&(s.activeSamples>=8000||s.speechEvidence>now-4500)){
-    const audio=s.ring.latest(80000);s.asrBusy=true;s.lastASR=now;s.activeSamples=0;if(!s.preparedCount)caption(s,'processing','대사를 분석하고 있어요. 준비되면 다시 보기 버튼이 나와요.');const requestId=++s.requestId;s.worker.postMessage({type:'transcribe',audio,generation:s.generation,requestId,capturedAt:now,clipId:s.clipId,mediaStart:mediaEnd-audio.length/16000*(anchor?.rate||1),rate:anchor?.rate||1,language:'ko'},[audio.buffer]);
+    const audio=s.ring.latest(80000);s.asrBusy=true;s.lastASR=now;s.activeSamples=0;if(!s.preparedCount)caption(s,'processing',s.fastBackend?'Apple Silicon에서 대사를 분석하고 있어요.':'대사를 분석하고 있어요. 준비되면 다시 보기 버튼이 나와요.');const requestId=++s.requestId;const request={audio,volumeEnvelope:rmsEnvelope(audio),generation:s.generation,requestId,capturedAt:now,clipId:s.clipId,mediaStart:mediaEnd-audio.length/16000*(anchor?.rate||1),rate:anchor?.rate||1,language:'ko'};
+    if(s.fastBackend){
+     transcribeFast(request)
+      .then(result=>handleTranscript(s,result))
+      .catch(()=>{
+       if(session!==s)return;
+       s.fastBackend=null;
+       if(s.browserReady){
+        sendBrowserTranscription(s,request);
+        caption(s,'processing','로컬 가속 연결이 끊겨 브라우저 분석으로 이어갑니다.');
+       }else{
+        s.pendingAudio=request;
+        caption(s,'processing','로컬 가속 연결이 끊겨 브라우저 Whisper를 준비하고 있어요.');
+       }
+      });
+    }
+    else sendBrowserTranscription(s,request);
    }
   };
-  await caption(s,s.speechFallback?'loading':'disabled',s.speechFallback?'음성 인식기를 준비하고 있어요. 영상을 계속 재생해주세요.':'음성 분석이 꺼져 있어요. 확장앱 설정에서 켜주세요.',{phase:'listening',preparedCount:0});return {ok:true};
+  if(!s.fastBackend){
+   await caption(s,s.speechFallback?'loading':'disabled',s.speechFallback?'음성 인식기를 준비하고 있어요. 영상을 계속 재생해주세요.':'음성 분석이 꺼져 있어요. 확장앱 설정에서 켜주세요.',{phase:'listening',preparedCount:0});
+  }
+  return {ok:true};
  }catch(error){await stop();return {ok:false,error:error.message};}
 }
 async function classify(s,audio,generation,frame){s.soundBusy=true;let input,output;

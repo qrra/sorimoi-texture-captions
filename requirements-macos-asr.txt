@@ -1,0 +1,6 @@
+# Optional Apple Silicon speech accelerator for the Sorimoi browser extension.
+# Use Python 3.11+ in a separate virtual environment on macOS arm64.
+fastapi>=0.115,<1
+numpy>=2.0,<3
+mlx-whisper>=0.4.2,<1
+uvicorn[standard]>=0.30,<1
