@@ -4,8 +4,11 @@ import {DEFAULT_PREFS,validateProject} from '../../src/core.mjs';
 import css from '../../src/texture.css?inline';
 import './style.css';
 const $=s=>document.querySelector(s);let data=await browser.storage.local.get(['project','prefs']);
-$('#motion').checked=data.prefs?.impactMotion!==false;$('#speechFallback').checked=data.prefs?.speechFallback!==false;$('#amount').value=data.prefs?.amount??.65;
-for(const id of ['motion','amount','speechFallback'])$('#'+id).onchange=async()=>{data=await browser.storage.local.get('prefs');await browser.storage.local.set({prefs:{...DEFAULT_PREFS,...data.prefs,impactMotion:$('#motion').checked,speechFallback:$('#speechFallback').checked,amount:Number($('#amount').value)}});};
+// Older builds had no size control; their stored 1.0 was the implicit default.
+if(data.prefs?.size==null||Number(data.prefs.size)===1){data.prefs={...data.prefs,size:DEFAULT_PREFS.size};await browser.storage.local.set({prefs:data.prefs});}
+$('#motion').checked=data.prefs?.impactMotion!==false;$('#speechFallback').checked=data.prefs?.speechFallback!==false;$('#amount').value=data.prefs?.amount??.65;$('#size').value=data.prefs?.size??DEFAULT_PREFS.size;$('#sizeValue').value=`${Math.round(Number($('#size').value)*100)}%`;
+$('#size').oninput=()=>{$('#sizeValue').value=`${Math.round(Number($('#size').value)*100)}%`;};
+for(const id of ['motion','amount','speechFallback','size'])$('#'+id).onchange=async()=>{data=await browser.storage.local.get('prefs');const prefs={...DEFAULT_PREFS,...data.prefs,impactMotion:$('#motion').checked,speechFallback:$('#speechFallback').checked,amount:Number($('#amount').value),size:Number($('#size').value)};await browser.storage.local.set({prefs});if(id==='size')await browser.runtime.sendMessage({target:'background',type:'UPDATE_TEXT_SIZE',size:prefs.size});};
 async function refresh(){try{
  const [state,tabs]=await Promise.all([browser.runtime.sendMessage({target:'background',type:'STATUS'}),browser.tabs.query({active:true,currentWindow:true})]);
  const on=state?.tabId===tabs[0]?.id&&state?.phase&&!['idle','ended'].includes(state.phase);

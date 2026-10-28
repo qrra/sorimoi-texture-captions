@@ -10,6 +10,8 @@ export function installOverlay(project,prefs,css){
  const stack=document.createElement('div');stack.className='stack'+(prefs.motion?' sori-motion':'')+(prefs.plain?' sori-plain':'');
  const sounds=document.createElement('div'),speech=document.createElement('div');sounds.className='sound-zone';speech.className='speech-zone';stack.append(sounds,speech);root.append(style,stack);
  let parent=document.fullscreenElement||document.documentElement;parent.append(host);let raf,last='',destroyed=false;const initialUrl=location.href;
+ const sizeListener=message=>{if(message?.type!=='SORIMOI_TEXT_SIZE')return;prefs.size=Math.max(.8,Math.min(1.8,Number(message.size)||1.3));for(const el of [...sounds.children,...speech.children])el.style.zoom=String(prefs.size);};
+ chrome.runtime?.onMessage?.addListener(sizeListener);
  const tick=()=>{
   if(destroyed)return;const rect=video.getBoundingClientRect();host.style.left=rect.left+'px';host.style.top=rect.top+'px';host.style.width=rect.width+'px';host.style.height=rect.height+'px';
   const visible=rect.width>0&&rect.height>0&&document.contains(video)&&location.href===initialUrl;host.style.display=visible?'block':'none';
@@ -26,7 +28,7 @@ export function installOverlay(project,prefs,css){
  };
  const fs=()=>{const target=document.fullscreenElement||document.documentElement;if(target!==parent){parent=target;parent.append(host);}};
  document.addEventListener('fullscreenchange',fs);tick();
- window[KEY]={destroy(){destroyed=true;cancelAnimationFrame(raf);document.removeEventListener('fullscreenchange',fs);host.remove();delete window[KEY];}};
+ window[KEY]={destroy(){destroyed=true;cancelAnimationFrame(raf);document.removeEventListener('fullscreenchange',fs);chrome.runtime?.onMessage?.removeListener(sizeListener);host.remove();delete window[KEY];}};
  return {ok:true,count:project.cues.filter(c=>c.reviewed).length,title:document.title};
 }
 export function removeOverlay(){window.__sorimoiOverlayV1?.destroy();return true;}

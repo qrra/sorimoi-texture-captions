@@ -12,6 +12,12 @@ export default defineBackground(()=>{
   if(message?.target!=='background')return;
   (async()=>{
    if(message.type==='STATUS')return state();
+   if(message.type==='UPDATE_TEXT_SIZE'){
+    const current=await state(),size=Math.max(.8,Math.min(1.8,Number(message.size)||1.3));
+    const [activeTab]=await browser.tabs.query({active:true,currentWindow:true}),tabId=current.tabId||activeTab?.id;
+    if(tabId)await browser.tabs.sendMessage(tabId,{type:'SORIMOI_TEXT_SIZE',size}).catch(()=>{});
+    return {ok:true};
+   }
    if(message.type==='REPLAY'){const current=await state();if(!current.tabId)return {ok:false,error:'먼저 효과음을 켜주세요.'};return browser.tabs.sendMessage(current.tabId,{type:'SORIMOI_REPLAY'});}
    if(message.type==='STOP'){await stop();return {ok:true};}
    if(message.type==='START'){
