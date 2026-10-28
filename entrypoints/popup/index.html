@@ -1,1 +1,18 @@
-<!doctype html><html lang="ko"><head><meta charset="UTF-8"><title>소리모이 자막</title></head><body><main><p class="eyebrow">SORIMOI · CAPTIONS</p><h1>먼저 자막을,<br>소리의 느낌까지.</h1><p id="summary" role="status">영상을 재생하고 자막 시작을 눌러주세요.</p><button id="liveStart">자막 시작</button><button id="replay" class="sub" hidden>준비된 자막 구간 다시 보기</button><button id="liveStop" class="quiet" hidden>자막 끄기</button><p id="status" role="status"></p><p class="note">대사는 첫 재생 중 도착하는 대로 표시해요. 준비된 구간을 영상 시간에 맞춰 다시 볼 수도 있습니다.</p><details><summary>자막 설정</summary><label class="row">자막 없으면 음성으로 만들기<input id="speechFallback" type="checkbox" checked></label><label class="row">효과음 글자 움직이기<input id="motion" type="checkbox" checked></label><label class="row">자막 글자 크기 <output id="sizeValue">130%</output><input id="size" type="range" min=".8" max="1.8" step=".1" value="1.3" aria-label="자막 글자 크기"></label><label class="row">질감 강도<input id="amount" type="range" min="0" max="1" step=".1" value=".65"></label><p class="note">크기는 기본보다 30% 크게 시작해요. 영상 위 자막에도 바로 적용됩니다. Apple Silicon에서 로컬 MLX Whisper를 실행 중이면 자동으로 연결합니다. 음성 인식은 틀릴 수 있습니다.</p><button id="studio" class="sub">파일 자막 검수 ↗</button><button id="apply" class="quiet">저장한 자막 적용</button><button id="remove" class="quiet">저장한 자막 지우기</button></details><p class="note">현재 탭의 소리만 기기 안에서 분석합니다. 마이크는 사용하지 않습니다.</p><p class="note">0.4.0</p></main><script type="module" src="./main.js"></script></body></html>
+<!doctype html>
+<html lang="ko">
+<head><meta charset="UTF-8"><title>소리모이 자막</title></head>
+<body><main>
+<p class="eyebrow">SORIMOI · CAPTIONS</p><h1>먼저 자막을,<br>소리의 느낌까지.</h1>
+<p id="summary" role="status">영상을 재생하고 자막 시작을 눌러주세요.</p>
+<button id="liveStart">자막 시작</button><button id="replay" class="sub" hidden>준비된 자막 구간 다시 보기</button><button id="liveStop" class="quiet" hidden>자막 끄기</button><p id="status" role="status"></p>
+<p class="note">대사는 첫 재생 중 도착하는 대로 표시해요. 준비된 구간을 영상 시간에 맞춰 다시 볼 수도 있습니다.</p>
+<details><summary>자막 설정</summary>
+<label class="row">자막 없으면 음성으로 만들기<input id="speechFallback" type="checkbox" checked></label>
+<label class="row">효과음 글자 움직이기<input id="motion" type="checkbox" checked></label>
+<label class="row">자막 글자 크기 <output id="sizeValue">130%</output><input id="size" type="range" min=".8" max="1.8" step=".1" value="1.3" aria-label="자막 글자 크기"></label>
+<label class="row color-row">자막 포인트 색<input id="accentColor" type="color" value="#78e6cc" aria-label="자막 포인트 색"></label>
+<label class="row">질감 강도<input id="amount" type="range" min="0" max="1" step=".1" value=".65"></label>
+<p class="note">말하는 순간의 음량을 재서 단어 크기에 반영해요. 선택한 색은 현재 단어와 자막 주변의 빛에 적용됩니다.</p>
+<button id="studio" class="sub">파일 자막 검수 ↗</button><button id="apply" class="quiet">저장한 자막 적용</button><button id="remove" class="quiet">저장한 자막 지우기</button>
+</details><p class="note">현재 탭의 소리만 기기 안에서 분석합니다. 마이크는 사용하지 않습니다.</p><p class="note">0.4.0</p>
+</main><script type="module" src="./main.js"></script></body></html>
